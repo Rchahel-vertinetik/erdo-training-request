@@ -3,13 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Training Request</title>
+    <title>Submit Training Request</title>
+    <style>
+        body {
+            text-align: center;
+            margin-top: 50px;
+        }
+        #submitButton {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        #responseMessage {
+            margin-top: 20px;
+            font-size: 16px;
+        }
+    </style>
 </head>
 <body>
-    <h2>Add New Training Request</h2>
-    <label>Project Name:</label>
-    <input type="text" id="projectInput" placeholder="Enter Project Name">
-    <button onclick="addFeature()">Submit</button>
+
+    <button id="submitButton" onclick="addFeature()">Submit Request</button>
     <p id="responseMessage"></p>
 
     <script>
@@ -18,10 +34,10 @@
             return params.get(name);
         }
 
-        function addFeature(autoSubmit = false) {
-            let projectName = document.getElementById("projectInput").value;
+        function addFeature() {
+            let projectName = getURLParameter("project");
             if (!projectName) {
-                alert("Please enter a Project Name.");
+                alert("Missing project name in the URL.");
                 return;
             }
 
@@ -48,24 +64,12 @@
             .then(data => {
                 console.log(data);
                 document.getElementById("responseMessage").innerText = data.addResults ? "Feature added successfully!" : "Error adding feature.";
-                if (autoSubmit) {
-                    alert("Feature submitted successfully!");
-                }
             })
             .catch(error => {
                 console.error("Error:", error);
                 document.getElementById("responseMessage").innerText = "Failed to add feature.";
             });
         }
-
-        // Auto-fill and submit if project name is provided in the URL
-        window.onload = function() {
-            let projectName = getURLParameter("project");
-            if (projectName) {
-                document.getElementById("projectInput").value = projectName;
-                addFeature(true); // Auto-submit if project is provided
-            }
-        };
     </script>
 
 </body>
