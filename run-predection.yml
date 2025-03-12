@@ -2,7 +2,7 @@ name: Run Predection Script on Request
 
 on:
   repository_dispatch: # This allows external triggers (from our button)
-    types: [run_python_script]
+    types: [run_predection]
 
 jobs:
   run_script:
