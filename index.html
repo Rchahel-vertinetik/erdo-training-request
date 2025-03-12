@@ -67,34 +67,36 @@
         }
 
         function triggerGitHubActions(projectName) {
-            logDebug("Triggering GitHub Actions for project: " + projectName);
-            fetch("https://api.github.com/repos/rchahel-vertinetik/erdo-training-request/dispatches", {
-                method: "POST",
-                headers: {
-                    "Accept": "application/vnd.github.v3+json",
-                    "Authorization": "Bearer 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"
-                },
-                body: JSON.stringify({
-                    event_type: "run_predection",
-                    client_payload: {
-                        project_name: projectName
-                    }
-                })
-            })
-            .then(response => response.json().then(data => ({ status: response.status, body: data })))
-            .then(result => {
-                if (result.status === 204) {
-                    logDebug("✅ GitHub Actions triggered successfully.");
-                } else {
-                    logDebug("❌ GitHub Actions failed. Response: " + JSON.stringify(result.body));
-                    console.error("GitHub Actions failed:", result.body);
-                }
-            })
-            .catch(error => {
-                logDebug("❌ Error triggering GitHub Actions: " + error);
-                console.error("Error triggering GitHub Actions:", error);
+    logDebug("Triggering GitHub Actions for project: " + projectName);
+
+    fetch("https://api.github.com/repos/rchahel-vertinetik/erdo-training-request/actions/workflows/run-predection.yml/dispatches", {
+        method: "POST",
+        headers: {
+            "Accept": "application/vnd.github.v3+json",
+            "Authorization": "Bearer PAT_TOKEN", 
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            ref: "main",
+            inputs: { project_name: projectName }
+        })
+    })
+    .then(response => {
+        if (response.ok) {
+            logDebug("✅ GitHub Actions triggered successfully.");
+        } else {
+            response.json().then(data => {
+                logDebug("❌ GitHub Actions failed. Response: " + JSON.stringify(data));
+                console.error("GitHub Actions failed:", data);
             });
         }
+    })
+    .catch(error => {
+        logDebug("❌ Error triggering GitHub Actions: " + error);
+        console.error("Error triggering GitHub Actions:", error);
+    });
+}
+
 
         function addFeature() {
             let projectName = getURLParameter("project");
