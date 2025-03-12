@@ -13,20 +13,21 @@
             background-color: #4CAF50;
             color: white;
             border: none;
-            padding: 15px 25px;
-            font-size: 18px;
-            cursor: pointer;
-        }
-        #responseMessage {
-            margin-top: 20px;
+            padding: 12px 20px;
             font-size: 16px;
+            cursor: pointer;
+            border-radius: 25px; /* Rounded edges */
+            transition: background-color 0.3s ease-in-out;
+        }
+        #submitButton.submitted {
+            background-color: red;
+            cursor: not-allowed;
         }
     </style>
 </head>
 <body>
 
     <button id="submitButton" onclick="addFeature()">Submit Request</button>
-    <p id="responseMessage"></p>
 
     <script>
         function getURLParameter(name) {
@@ -63,11 +64,14 @@
             .then(response => response.json())
             .then(data => {
                 console.log(data);
-                document.getElementById("responseMessage").innerText = data.addResults ? "Feature added successfully!" : "Error adding feature.";
+                let button = document.getElementById("submitButton");
+                button.innerText = "Submitted";
+                button.classList.add("submitted");
+                button.disabled = true; // Disable button after submission
             })
             .catch(error => {
                 console.error("Error:", error);
-                document.getElementById("responseMessage").innerText = "Failed to add feature.";
+                alert("Failed to submit request.");
             });
         }
     </script>
