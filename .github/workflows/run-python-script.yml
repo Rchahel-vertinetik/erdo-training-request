@@ -1,8 +1,8 @@
-name: Run Python Script from URL Form
+name: Run Python Script on Request
 
 on:
   repository_dispatch:
-    types: [run_form_script]
+    types: [run_python_script]
 
 permissions:
   contents: read
@@ -25,9 +25,8 @@ jobs:
         python -m pip install --upgrade pip
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-    - name: Run Python Script with Variables
+    - name: Run Python Script
       env:
         PROJECT_NAME: ${{ github.event.client_payload.project_name }}
-        USER_ID: ${{ github.event.client_payload.user_id }}
         REQUEST_DATE: ${{ github.event.client_payload.request_date }}
       run: python script.py
