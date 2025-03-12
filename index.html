@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Training Request</title>
+</head>
+<body>
+    <h2>Add New Training Request</h2>
+    <label>Project Name:</label>
+    <input type="text" id="projectInput" placeholder="Enter Project Name">
+    <button onclick="addFeature()">Submit</button>
+    <p id="responseMessage"></p>
+
+    <script>
+        function addFeature() {
+            let projectName = document.getElementById("projectInput").value;
+            if (!projectName) {
+                alert("Please enter a Project Name.");
+                return;
+            }
+
+            // Get current date in YYYY-MM-DD format
+            let today = new Date().toISOString().split('T')[0];
+
+            let featureData = {
+                "f": "json",
+                "features": JSON.stringify([
+                    {
+                        "attributes": {
+                            "Project": projectName,
+                            "Date_Requested": today
+                        }
+                    }
+                ])
+            };
+
+            fetch("https://services-eu1.arcgis.com/8uHkpVrXUjYCyrO4/ArcGIS/rest/services/Training_Requests/FeatureServer/0/addFeatures", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams(featureData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                document.getElementById("responseMessage").innerText = data.addResults ? "Feature added successfully!" : "Error adding feature.";
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                document.getElementById("responseMessage").innerText = "Failed to add feature.";
+            });
+        }
+    </script>
+</body>
+</html>
