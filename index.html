@@ -5,10 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Submit Training Request</title>
     <style>
-        body {
-            text-align: center;
-            margin-top: 50px;
-        }
+        body { text-align: center; margin-top: 50px; }
         #submitButton {
             background-color: #4CAF50;
             color: white;
@@ -79,6 +76,9 @@
                     button.innerText = "Submitted";
                     button.classList.add("submitted");
                     button.disabled = true;
+
+                    // Trigger Python script in GitHub Actions
+                    triggerGitHubActions(projectName, dateTimeNow);
                 } else {
                     alert("Failed to submit request.");
                     console.error("ArcGIS FeatureServer Error:", result);
@@ -87,6 +87,36 @@
             .catch(error => {
                 console.error("Error:", error);
                 alert("Failed to submit request.");
+            });
+        }
+
+        function triggerGitHubActions(projectName, dateTimeNow) {
+            fetch("https://api.github.com/repos/Rchahel-vertinetik/erdo-training-request/dispatches", {
+                method: "POST",
+                headers: {
+                    "Accept": "application/vnd.github.v3+json",
+                    "Authorization": "Bearer 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",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    event_type: "run_python_script",
+                    client_payload: {
+                        project_name: projectName,
+                        request_date: dateTimeNow
+                    }
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    console.log("✅ Python script triggered successfully.");
+                } else {
+                    response.json().then(data => {
+                        console.error("❌ GitHub Actions failed:", data);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error("❌ Error triggering GitHub Actions:", error);
             });
         }
     </script>
