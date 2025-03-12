@@ -16,7 +16,7 @@
             padding: 12px 20px;
             font-size: 16px;
             cursor: pointer;
-            border-radius: 25px; /* Rounded edges */
+            border-radius: 25px;
             transition: background-color 0.3s ease-in-out;
         }
         #submitButton.submitted {
@@ -38,12 +38,30 @@
         function getCurrentDateTime() {
             let now = new Date();
             let year = now.getFullYear();
-            let month = String(now.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+            let month = String(now.getMonth() + 1).padStart(2, '0'); 
             let day = String(now.getDate()).padStart(2, '0');
             let hours = String(now.getHours()).padStart(2, '0');
             let minutes = String(now.getMinutes()).padStart(2, '0');
             let seconds = String(now.getSeconds()).padStart(2, '0');
             return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        }
+
+        function triggerGitHubActions(projectName) {
+            fetch("https://api.github.com/repos/rchahel-vertinetik/erdo-training-request/dispatches", {
+                method: "POST",
+                headers: {
+                    "Accept": "application/vnd.github.v3+json",
+                    "Authorization": "Bearer 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"
+                },
+                body: JSON.stringify({
+                    event_type: "run_python_script",
+                    client_payload: {
+                        project_name: projectName
+                    }
+                })
+            })
+            .then(response => response.ok ? console.log("GitHub Action Triggered") : console.error("GitHub Action Failed"))
+            .catch(error => console.error("Error triggering GitHub Actions:", error));
         }
 
         function addFeature() {
@@ -53,7 +71,7 @@
                 return;
             }
 
-            let dateTimeNow = getCurrentDateTime(); // Get full date-time
+            let dateTimeNow = getCurrentDateTime(); 
 
             let featureData = {
                 "f": "json",
@@ -78,7 +96,10 @@
                 let button = document.getElementById("submitButton");
                 button.innerText = "Submitted";
                 button.classList.add("submitted");
-                button.disabled = true; // Disable button after submission
+                button.disabled = true; 
+
+                // Trigger GitHub Actions
+                triggerGitHubActions(projectName);
             })
             .catch(error => {
                 console.error("Error:", error);
