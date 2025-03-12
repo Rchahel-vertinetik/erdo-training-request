@@ -23,13 +23,33 @@
             background-color: red;
             cursor: not-allowed;
         }
+        #debugLog {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #333;
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: left;
+            width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+            max-height: 200px;
+            overflow-y: auto;
+        }
     </style>
 </head>
 <body>
 
     <button id="submitButton" onclick="addFeature()">Submit Request</button>
+    <div id="debugLog">Debug Log:<br></div>
 
     <script>
+        function logDebug(message) {
+            let debugDiv = document.getElementById("debugLog");
+            debugDiv.innerHTML += message + "<br>";
+        }
+
         function getURLParameter(name) {
             const params = new URLSearchParams(window.location.search);
             return params.get(name);
@@ -47,11 +67,12 @@
         }
 
         function triggerGitHubActions(projectName) {
+            logDebug("Triggering GitHub Actions for project: " + projectName);
             fetch("https://api.github.com/repos/rchahel-vertinetik/erdo-training-request/dispatches", {
                 method: "POST",
                 headers: {
                     "Accept": "application/vnd.github.v3+json",
-                    "Authorization": "Bearer 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"
+                    "Authorization": "Bearer YOUR_GITHUB_PERSONAL_ACCESS_TOKEN"
                 },
                 body: JSON.stringify({
                     event_type: "run_predection",
@@ -60,18 +81,32 @@
                     }
                 })
             })
-            .then(response => response.ok ? console.log("GitHub Action Triggered") : console.error("GitHub Action Failed"))
-            .catch(error => console.error("Error triggering GitHub Actions:", error));
+            .then(response => response.json().then(data => ({ status: response.status, body: data })))
+            .then(result => {
+                if (result.status === 204) {
+                    logDebug("✅ GitHub Actions triggered successfully.");
+                } else {
+                    logDebug("❌ GitHub Actions failed. Response: " + JSON.stringify(result.body));
+                    console.error("GitHub Actions failed:", result.body);
+                }
+            })
+            .catch(error => {
+                logDebug("❌ Error triggering GitHub Actions: " + error);
+                console.error("Error triggering GitHub Actions:", error);
+            });
         }
 
         function addFeature() {
             let projectName = getURLParameter("project");
             if (!projectName) {
                 alert("Missing project name in the URL.");
+                logDebug("⚠️ Missing project name in URL.");
                 return;
             }
 
-            let dateTimeNow = getCurrentDateTime(); 
+            let dateTimeNow = getCurrentDateTime();
+            logDebug("📅 Date & Time: " + dateTimeNow);
+            logDebug("📌 Project: " + projectName);
 
             let featureData = {
                 "f": "json",
@@ -85,23 +120,30 @@
                 ])
             };
 
+            logDebug("📡 Sending data to ArcGIS FeatureServer...");
             fetch("https://services-eu1.arcgis.com/8uHkpVrXUjYCyrO4/ArcGIS/rest/services/Training_Requests/FeatureServer/0/addFeatures", {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body: new URLSearchParams(featureData)
             })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data);
-                let button = document.getElementById("submitButton");
-                button.innerText = "Submitted";
-                button.classList.add("submitted");
-                button.disabled = true; 
+            .then(response => response.json().then(data => ({ status: response.status, body: data })))
+            .then(result => {
+                if (result.status === 200 && result.body.addResults) {
+                    logDebug("✅ ArcGIS Feature added successfully: " + JSON.stringify(result.body.addResults));
+                    let button = document.getElementById("submitButton");
+                    button.innerText = "Submitted";
+                    button.classList.add("submitted");
+                    button.disabled = true;
 
-                // Trigger GitHub Actions
-                triggerGitHubActions(projectName);
+                    // Trigger GitHub Actions
+                    triggerGitHubActions(projectName);
+                } else {
+                    logDebug("❌ ArcGIS FeatureServer failed. Response: " + JSON.stringify(result.body));
+                    console.error("ArcGIS FeatureServer Error:", result.body);
+                }
             })
             .catch(error => {
+                logDebug("❌ Error submitting to ArcGIS: " + error);
                 console.error("Error:", error);
                 alert("Failed to submit request.");
             });
