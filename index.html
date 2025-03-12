@@ -13,14 +13,18 @@
     <p id="responseMessage"></p>
 
     <script>
-        function addFeature() {
+        function getURLParameter(name) {
+            const params = new URLSearchParams(window.location.search);
+            return params.get(name);
+        }
+
+        function addFeature(autoSubmit = false) {
             let projectName = document.getElementById("projectInput").value;
             if (!projectName) {
                 alert("Please enter a Project Name.");
                 return;
             }
 
-            // Get current date in YYYY-MM-DD format
             let today = new Date().toISOString().split('T')[0];
 
             let featureData = {
@@ -44,12 +48,25 @@
             .then(data => {
                 console.log(data);
                 document.getElementById("responseMessage").innerText = data.addResults ? "Feature added successfully!" : "Error adding feature.";
+                if (autoSubmit) {
+                    alert("Feature submitted successfully!");
+                }
             })
             .catch(error => {
                 console.error("Error:", error);
                 document.getElementById("responseMessage").innerText = "Failed to add feature.";
             });
         }
+
+        // Auto-fill and submit if project name is provided in the URL
+        window.onload = function() {
+            let projectName = getURLParameter("project");
+            if (projectName) {
+                document.getElementById("projectInput").value = projectName;
+                addFeature(true); // Auto-submit if project is provided
+            }
+        };
     </script>
+
 </body>
 </html>
