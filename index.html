@@ -73,7 +73,7 @@
         method: "POST",
         headers: {
             "Accept": "application/vnd.github.v3+json",
-            "Authorization": "Bearer PAT_TOKEN", 
+            "Authorization": "Bearer process.env.PAT_TOKEN", 
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
