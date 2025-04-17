@@ -1,95 +1,132 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Submit Training Request</title>
-    <style>
-        body {
-            text-align: center;
-            margin-top: 50px;
-        }
-        #submitButton {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            border-radius: 25px;
-            transition: background-color 0.3s ease-in-out;
-        }
-        #submitButton.submitted {
-            background-color: red;
-            cursor: not-allowed;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Tree Classification Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 2rem;
+    }
+    input, button {
+      padding: 10px;
+      margin: 10px;
+      font-size: 16px;
+    }
+    .progress-container {
+      width: 80%;
+      margin: 20px auto;
+    }
+    .progress-bar {
+      height: 25px;
+      background-color: #4caf50;
+      width: 0%;
+      color: white;
+      text-align: center;
+      transition: width 0.3s;
+    }
+    .status {
+      margin-top: 10px;
+      font-style: italic;
+    }
+  </style>
 </head>
 <body>
 
-    <button id="submitButton" onclick="addFeature()">Submit Request</button>
+  <h2>🌳 Tree Classification Dashboard</h2>
 
-    <script>
-        function getURLParameter(name) {
-            const params = new URLSearchParams(window.location.search);
-            return params.get(name);
-        }
+  <input type="text" id="projectInput" placeholder="Enter project name" />
+  <br/>
 
-        function getCurrentDateTime() {
-            let now = new Date();
-            let year = now.getFullYear();
-            let month = String(now.getMonth() + 1).padStart(2, '0'); 
-            let day = String(now.getDate()).padStart(2, '0');
-            let hours = String(now.getHours()).padStart(2, '0');
-            let minutes = String(now.getMinutes()).padStart(2, '0');
-            let seconds = String(now.getSeconds()).padStart(2, '0');
-            return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-        }
+  <button onclick="runPredictProject()">🧠 Predict Project</button>
+  <button onclick="runRetrain()">🔁 Retrain</button>
+  <button onclick="runDelete()">❌ Delete Predictions</button>
+  <button onclick="runSync()">🔄 Sync to Crowns</button>
 
-        function addFeature() {
-            let projectName = getURLParameter("project");
-            if (!projectName) {
-                alert("Missing project name in the URL.");
-                return;
+  <div class="progress-container">
+    <div class="progress-bar" id="progressBar">0%</div>
+    <div class="status" id="statusText"></div>
+  </div>
+
+  <script>
+    const API_BASE = "http://35.178.130.156:8080";
+
+    function updateProgress(progress, total, status) {
+      const percent = Math.min(100, Math.round((progress / total) * 100));
+      const bar = document.getElementById("progressBar");
+      bar.style.width = percent + "%";
+      bar.textContent = percent + "%";
+      document.getElementById("statusText").innerText = status;
+    }
+
+    async function streamEndpoint(url) {
+      const response = await fetch(url);
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder("utf-8");
+      let { value, done } = await reader.read();
+      while (!done) {
+        const chunk = decoder.decode(value);
+        const lines = chunk.trim().split("\n");
+        for (const line of lines) {
+          try {
+            const json = JSON.parse(line);
+            if (json.progress !== undefined && json.total !== undefined) {
+              updateProgress(json.progress, json.total, json.status || "working...");
+            } else {
+              document.getElementById("statusText").innerText = json.status || "Processing...";
             }
-
-            let dateTimeNow = getCurrentDateTime();
-
-            let featureData = {
-                "f": "json",
-                "features": JSON.stringify([
-                    {
-                        "attributes": {
-                            "Project": projectName,
-                            "Date_Requested": dateTimeNow
-                        }
-                    }
-                ])
-            };
-
-            fetch("https://services-eu1.arcgis.com/8uHkpVrXUjYCyrO4/ArcGIS/rest/services/Training_Requests/FeatureServer/0/addFeatures", {
-                method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: new URLSearchParams(featureData)
-            })
-            .then(response => response.json())
-            .then(result => {
-                if (result.addResults && result.addResults.length > 0 && result.addResults[0].success) {
-                    let button = document.getElementById("submitButton");
-                    button.innerText = "Submitted";
-                    button.classList.add("submitted");
-                    button.disabled = true;
-                } else {
-                    alert("Failed to submit request.");
-                    console.error("ArcGIS FeatureServer Error:", result);
-                }
-            })
-            .catch(error => {
-                console.error("Error:", error);
-                alert("Failed to submit request.");
-            });
+          } catch (e) {
+            console.warn("Non-JSON line:", line);
+          }
         }
-    </script>
+        ({ value, done } = await reader.read());
+      }
+    }
+
+    function getProject() {
+      const name = document.getElementById("projectInput").value;
+      if (!name) {
+        alert("Please enter a project name.");
+        throw new Error("Missing project name");
+      }
+      return name;
+    }
+
+    async function runPredictProject() {
+      const project = getProject();
+      const url = `${API_BASE}/predict_project?project_name=${encodeURIComponent(project)}`;
+      await streamEndpoint(url);
+    }
+
+    async function runRetrain() {
+      const project = getProject();
+      const url = `${API_BASE}/retrain?` + new URLSearchParams({
+        dataset_name: project,
+        image_dir: `/data/${project}/images`,
+        mask_dir: `/data/${project}/masks`,
+        label_geojson: `/data/${project}/labels.geojson`,
+        tree_id_header: "Tree_ID",
+        species_header: "Species",
+        max_epochs: "10"
+      });
+      const res = await fetch(url);
+      const json = await res.json();
+      updateProgress(100, 100, "✅ Retrain complete: " + json.retrain_model_path);
+    }
+
+    async function runDelete() {
+      const project = getProject();
+      const url = `${API_BASE}/delete_predictions?project_name=${encodeURIComponent(project)}`;
+      await streamEndpoint(url);
+    }
+
+    async function runSync() {
+      const project = getProject();
+      const url = `${API_BASE}/sync_predictions_to_tree_crowns?project_name=${encodeURIComponent(project)}`;
+      await streamEndpoint(url);
+    }
+  </script>
 
 </body>
 </html>
