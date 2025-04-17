@@ -1,18 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Tree Classification Dashboard</title>
+  <meta charset="UTF-8" />
+  <title>Tree App UI</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
       padding: 2rem;
     }
-    input, button {
-      padding: 10px;
-      margin: 10px;
+    button {
+      padding: 12px 20px;
+      margin: 8px;
       font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
     }
     .progress-container {
       width: 80%;
@@ -34,11 +36,6 @@
 </head>
 <body>
 
-  <h2>🌳 Tree Classification Dashboard</h2>
-
-  <input type="text" id="projectInput" placeholder="Enter project name" />
-  <br/>
-
   <button onclick="runPredictProject()">🧠 Predict Project</button>
   <button onclick="runRetrain()">🔁 Retrain</button>
   <button onclick="runDelete()">❌ Delete Predictions</button>
@@ -51,6 +48,16 @@
 
   <script>
     const API_BASE = "http://35.178.130.156:8080";
+
+    function getProjectFromURL() {
+      const params = new URLSearchParams(window.location.search);
+      const project = params.get("project");
+      if (!project) {
+        alert("Missing project name in URL. Use ?project=YourProjectName");
+        throw new Error("Missing project parameter");
+      }
+      return project;
+    }
 
     function updateProgress(progress, total, status) {
       const percent = Math.min(100, Math.round((progress / total) * 100));
@@ -84,23 +91,14 @@
       }
     }
 
-    function getProject() {
-      const name = document.getElementById("projectInput").value;
-      if (!name) {
-        alert("Please enter a project name.");
-        throw new Error("Missing project name");
-      }
-      return name;
-    }
-
     async function runPredictProject() {
-      const project = getProject();
+      const project = getProjectFromURL();
       const url = `${API_BASE}/predict_project?project_name=${encodeURIComponent(project)}`;
       await streamEndpoint(url);
     }
 
     async function runRetrain() {
-      const project = getProject();
+      const project = getProjectFromURL();
       const url = `${API_BASE}/retrain?` + new URLSearchParams({
         dataset_name: project,
         image_dir: `/data/${project}/images`,
@@ -116,13 +114,13 @@
     }
 
     async function runDelete() {
-      const project = getProject();
+      const project = getProjectFromURL();
       const url = `${API_BASE}/delete_predictions?project_name=${encodeURIComponent(project)}`;
       await streamEndpoint(url);
     }
 
     async function runSync() {
-      const project = getProject();
+      const project = getProjectFromURL();
       const url = `${API_BASE}/sync_predictions_to_tree_crowns?project_name=${encodeURIComponent(project)}`;
       await streamEndpoint(url);
     }
