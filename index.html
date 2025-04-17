@@ -2,30 +2,40 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Tree App UI</title>
+  <title>Tree Species Classifier</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: "Segoe UI", sans-serif;
+      background-color: #f9f9f9;
       text-align: center;
-      padding: 1rem;
-      position: relative;
+      padding: 2rem;
       font-size: 14px;
     }
 
-    .button-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.75rem;
-      max-width: 300px;
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      max-width: 320px;
       margin: 0 auto;
       position: relative;
     }
 
     button {
-      padding: 8px;
-      font-size: 13px;
+      width: 100%;
+      padding: 10px 14px;
+      font-size: 14px;
+      background-color: #4caf50;
+      color: white;
+      border: none;
       border-radius: 6px;
       cursor: pointer;
+      transition: background 0.2s ease-in-out;
+    }
+
+    button:hover:not(:disabled) {
+      background-color: #45a049;
     }
 
     button:disabled {
@@ -33,63 +43,67 @@
       cursor: not-allowed;
     }
 
-    /* Dropdown container */
+    /* More actions dropdown */
     .dropdown {
       position: relative;
-      display: inline-block;
+      width: 100%;
+    }
+
+    .more-btn {
+      background-color: #e0e0e0;
+      color: #333;
     }
 
     .dropdown-content {
       display: none;
       position: absolute;
-      top: 110%;
+      top: 100%;
+      width: 100%;
       left: 0;
-      background-color: #fff;
-      min-width: 160px;
-      box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
-      z-index: 20;
+      background: white;
       border: 1px solid #ddd;
       border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      z-index: 100;
     }
 
     .dropdown-content button {
+      background: none;
+      border: none;
+      color: #333;
       width: 100%;
       text-align: left;
-      padding: 8px;
-      background-color: white;
-      border: none;
-      border-bottom: 1px solid #eee;
+      padding: 10px;
       font-size: 13px;
-    }
-
-    .dropdown-content button:last-child {
-      border-bottom: none;
+      border-bottom: 1px solid #eee;
     }
 
     .dropdown-content button:hover {
       background-color: #f3f3f3;
     }
 
+    .dropdown-content button:last-child {
+      border-bottom: none;
+    }
+
     .dropdown:hover .dropdown-content {
       display: block;
     }
 
-    .progress-overlay {
+    .overlay {
       position: absolute;
       top: 0;
-      left: 50%;
-      transform: translateX(-50%);
+      left: 0;
       width: 100%;
-      max-width: 300px;
       height: 100%;
+      backdrop-filter: blur(4px);
       background-color: rgba(255, 255, 255, 0.8);
       display: none;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      z-index: 10;
-      border-radius: 6px;
-      font-size: 13px;
+      z-index: 999;
+      border-radius: 10px;
     }
 
     .progress-bar {
@@ -99,53 +113,50 @@
       color: white;
       text-align: center;
       transition: width 0.3s;
-      border-radius: 4px;
       font-size: 12px;
+      border-radius: 4px;
     }
 
     .spinner {
-      margin: 15px 0;
+      margin: 20px 0;
+      width: 30px;
+      height: 30px;
       border: 5px solid #f3f3f3;
       border-top: 5px solid #4caf50;
       border-radius: 50%;
-      width: 30px;
-      height: 30px;
       animation: spin 1s linear infinite;
     }
 
-    .status {
-      margin-top: 6px;
-      font-style: italic;
-      font-size: 13px;
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
 
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+    .status {
+      font-style: italic;
+      font-size: 13px;
     }
   </style>
 </head>
 <body>
 
-  <div class="button-grid">
-    <!-- Overlay above the buttons -->
-    <div id="overlay" class="progress-overlay">
-      <div class="spinner" id="spinner"></div>
+  <div class="container">
+    <div id="overlay" class="overlay">
+      <div class="spinner"></div>
       <div class="progress-bar" id="progressBar">0%</div>
       <div class="status" id="statusText">Working...</div>
     </div>
 
-    <!-- Predict + Dropdown -->
+    <button onclick="runPredictProject()">Analyze Trees</button>
+
     <div class="dropdown">
-      <button id="predictBtn" onclick="runPredictProject()">Predict</button>
+      <button class="more-btn">More Options ▾</button>
       <div class="dropdown-content">
-        <button onclick="runDelete()">🗑 Delete Predictions</button>
-        <button onclick="runSync()">✅ Approve Predictions</button>
+        <button onclick="runDelete()">Clear Results</button>
+        <button onclick="runSync()">Approve Results</button>
       </div>
     </div>
 
-    <!-- Retrain button -->
-    <button id="retrainBtn" onclick="runRetrain()">Retrain</button>
+    <button onclick="runRetrain()">Retrain Model</button>
   </div>
 
   <script>
@@ -166,23 +177,17 @@
 
     function updateProgress(progress, total, status) {
       const percent = Math.min(100, Math.round((progress / total) * 100));
-      const bar = document.getElementById("progressBar");
-      bar.style.width = percent + "%";
-      bar.textContent = percent + "%";
+      document.getElementById("progressBar").style.width = percent + "%";
+      document.getElementById("progressBar").textContent = percent + "%";
       document.getElementById("statusText").innerText = status;
     }
 
-    function showOverlay(show = true) {
+    function toggleOverlay(show = true) {
       document.getElementById("overlay").style.display = show ? "flex" : "none";
     }
 
-    function disableButtons(disable = true) {
-      document.querySelectorAll("button").forEach(btn => btn.disabled = disable);
-    }
-
     async function streamEndpoint(url) {
-      disableButtons(true);
-      showOverlay(true);
+      toggleOverlay(true);
       updateProgress(0, 100, "Starting...");
 
       try {
@@ -211,8 +216,7 @@
       } catch (err) {
         updateProgress(0, 100, "❌ Error: " + err.message);
       } finally {
-        disableButtons(false);
-        showOverlay(false);
+        toggleOverlay(false);
       }
     }
 
@@ -234,10 +238,8 @@
         max_epochs: "10"
       });
 
-      disableButtons(true);
-      showOverlay(true);
+      toggleOverlay(true);
       updateProgress(0, 100, "Retraining...");
-
       try {
         const res = await fetch(url);
         const json = await res.json();
@@ -245,8 +247,7 @@
       } catch (err) {
         updateProgress(0, 100, "❌ Error: " + err.message);
       } finally {
-        disableButtons(false);
-        showOverlay(false);
+        toggleOverlay(false);
       }
     }
 
