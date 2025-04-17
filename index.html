@@ -137,7 +137,7 @@
     const API_BASE = isSecure
       ? "https://35.178.130.156:443"
       : "http://35.178.130.156:8080";
-
+  
     function getProjectFromURL() {
       const params = new URLSearchParams(window.location.search);
       const project = params.get("project");
@@ -147,23 +147,30 @@
       }
       return project;
     }
-
+  
     function setStatus(msg) {
       document.getElementById("status").innerText = msg;
     }
-
+  
     function showSpinner(show) {
       document.getElementById("spinner").style.display = show ? "inline-block" : "none";
     }
-
+  
+    function disableAllButtons(disable = true) {
+      document.querySelectorAll("button").forEach(btn => {
+        btn.disabled = disable;
+      });
+    }
+  
     async function streamEndpoint(url) {
       showSpinner(true);
+      disableAllButtons(true);
       setStatus("Working...");
       try {
         const response = await fetch(url);
         const reader = response.body.getReader();
         const decoder = new TextDecoder("utf-8");
-
+  
         let { value, done } = await reader.read();
         while (!done) {
           const chunk = decoder.decode(value);
@@ -181,15 +188,16 @@
         setStatus("❌ " + err.message);
       } finally {
         showSpinner(false);
+        disableAllButtons(false);
       }
     }
-
+  
     async function runPredictProject() {
       const project = getProjectFromURL();
       const url = `${API_BASE}/predict_project?project_name=${encodeURIComponent(project)}`;
       await streamEndpoint(url);
     }
-
+  
     async function runRetrain() {
       const project = getProjectFromURL();
       const url = `${API_BASE}/retrain?` + new URLSearchParams({
@@ -201,8 +209,9 @@
         species_header: "Species",
         max_epochs: "10"
       });
-
+  
       showSpinner(true);
+      disableAllButtons(true);
       setStatus("Retraining...");
       try {
         const res = await fetch(url);
@@ -212,21 +221,20 @@
         setStatus("❌ " + err.message);
       } finally {
         showSpinner(false);
+        disableAllButtons(false);
       }
     }
-
+  
     async function runDelete() {
       const project = getProjectFromURL();
       const url = `${API_BASE}/delete_predictions?project_name=${encodeURIComponent(project)}`;
       await streamEndpoint(url);
     }
-
+  
     async function runSync() {
       const project = getProjectFromURL();
       const url = `${API_BASE}/sync_predictions_to_tree_crowns?project_name=${encodeURIComponent(project)}`;
       await streamEndpoint(url);
     }
   </script>
-
-</body>
-</html>
+  
