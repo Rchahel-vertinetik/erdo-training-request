@@ -10,45 +10,9 @@
       padding: 2rem;
     }
 
-    .button-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-      max-width: 400px;
-      margin: 0 auto;
-    }
-
-    button {
-      padding: 12px;
-      font-size: 16px;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    button:disabled {
-      background-color: #ccc;
-      cursor: not-allowed;
-    }
-
-    .spinner {
-      margin: 30px auto 10px auto;
-      border: 6px solid #f3f3f3;
-      border-top: 6px solid #4caf50;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-      display: none;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
     .progress-container {
       width: 80%;
-      margin: 20px auto 10px auto;
+      margin: 0 auto 10px auto;
     }
 
     .progress-bar {
@@ -64,22 +28,61 @@
       margin-top: 8px;
       font-style: italic;
     }
+
+    .spinner {
+      margin: 20px auto;
+      border: 6px solid #f3f3f3;
+      border-top: 6px solid #4caf50;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      display: none;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .button-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      max-width: 400px;
+      margin: 30px auto 0 auto;
+    }
+
+    button {
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 <body>
 
+  <!-- 🔝 Progress bar & status -->
+  <div class="progress-container">
+    <div class="progress-bar" id="progressBar">0%</div>
+    <div class="status" id="statusText"></div>
+  </div>
+
+  <!-- 🌀 Spinner -->
+  <div class="spinner" id="spinner"></div>
+
+  <!-- 🎛️ Buttons -->
   <div class="button-grid">
     <button id="predictBtn" onclick="runPredictProject()">🧠 Predict Project</button>
     <button id="retrainBtn" onclick="runRetrain()">🔁 Retrain</button>
     <button id="deleteBtn" onclick="runDelete()">❌ Delete Predictions</button>
     <button id="syncBtn" onclick="runSync()">🔄 Sync to Crowns</button>
-  </div>
-
-  <div class="spinner" id="spinner"></div>
-
-  <div class="progress-container">
-    <div class="progress-bar" id="progressBar">0%</div>
-    <div class="status" id="statusText"></div>
   </div>
 
   <script>
