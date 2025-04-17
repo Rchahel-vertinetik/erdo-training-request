@@ -33,6 +33,47 @@
       cursor: not-allowed;
     }
 
+    /* Dropdown container */
+    .dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      top: 110%;
+      left: 0;
+      background-color: #fff;
+      min-width: 160px;
+      box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
+      z-index: 20;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+    }
+
+    .dropdown-content button {
+      width: 100%;
+      text-align: left;
+      padding: 8px;
+      background-color: white;
+      border: none;
+      border-bottom: 1px solid #eee;
+      font-size: 13px;
+    }
+
+    .dropdown-content button:last-child {
+      border-bottom: none;
+    }
+
+    .dropdown-content button:hover {
+      background-color: #f3f3f3;
+    }
+
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+
     .progress-overlay {
       position: absolute;
       top: 0;
@@ -87,16 +128,24 @@
 <body>
 
   <div class="button-grid">
+    <!-- Overlay above the buttons -->
     <div id="overlay" class="progress-overlay">
       <div class="spinner" id="spinner"></div>
       <div class="progress-bar" id="progressBar">0%</div>
       <div class="status" id="statusText">Working...</div>
     </div>
 
-    <button id="predictBtn" onclick="runPredictProject()">Predict</button>
+    <!-- Predict + Dropdown -->
+    <div class="dropdown">
+      <button id="predictBtn" onclick="runPredictProject()">Predict</button>
+      <div class="dropdown-content">
+        <button onclick="runDelete()">🗑 Delete Predictions</button>
+        <button onclick="runSync()">✅ Approve Predictions</button>
+      </div>
+    </div>
+
+    <!-- Retrain button -->
     <button id="retrainBtn" onclick="runRetrain()">Retrain</button>
-    <button id="deleteBtn" onclick="runDelete()">Delete</button>
-    <button id="syncBtn" onclick="runSync()">Approve</button>
   </div>
 
   <script>
