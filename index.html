@@ -99,7 +99,10 @@
   </div>
 
   <script>
-    const API_BASE = "http://35.178.130.156:8080";
+    const isSecure = window.location.protocol === "https:";
+    const API_BASE = isSecure
+  ? "https://35.178.130.156:443"  // if you set up SSL
+  : "http://35.178.130.156:8080";
 
     function getProjectFromURL() {
       const params = new URLSearchParams(window.location.search);
