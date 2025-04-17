@@ -19,14 +19,14 @@
       display: flex;
       flex-direction: column;
       height: 100%;
-      justify-content: flex-start;
-      padding: 4px 6px;
+      justify-content: space-between;
+      padding: 8px 10px;
       box-sizing: border-box;
     }
 
     .button-row {
       display: flex;
-      gap: 6px;
+      gap: 10px;
       align-items: center;
       justify-content: space-between;
     }
@@ -35,8 +35,8 @@
       background-color: #359f00;
       color: white;
       border: none;
-      padding: 6px 8px;
-      border-radius: 4px;
+      padding: 10px 10px;
+      border-radius: 5px;
       font-size: 13px;
       cursor: pointer;
       white-space: nowrap;
@@ -47,7 +47,6 @@
       cursor: not-allowed;
     }
 
-    /* Analyze dropdown combo */
     .dropdown-wrap {
       position: relative;
       flex: 1;
@@ -76,7 +75,7 @@
       color: white;
       width: 100%;
       text-align: left;
-      padding: 6px 8px;
+      padding: 6px 10px;
       font-size: 12px;
       cursor: pointer;
     }
@@ -90,12 +89,12 @@
     }
 
     .footer {
-      margin-top: auto;
       font-size: 10px;
       color: #bbb;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      padding-top: 4px;
     }
 
     .spinner {
@@ -116,16 +115,17 @@
 
   <div class="container">
     <div class="button-row">
+      <!-- Run Predictions (main button with dropdown) -->
       <div class="dropdown-wrap">
-        <button class="main-btn">Analyze</button>
+        <button class="main-btn" onclick="runPredictProject()">Run Predictions</button>
         <div class="dropdown-content">
-          <button onclick="runPredictProject()">Run Predictions</button>
           <button onclick="runDelete()">Clear Results</button>
           <button onclick="runSync()">Approve Results</button>
         </div>
       </div>
 
-      <button class="main-btn" onclick="runRetrain()">Retrain</button>
+      <!-- Retrain Button -->
+      <button class="main-btn" onclick="runRetrain()">Retrain Model</button>
     </div>
 
     <div class="footer">
