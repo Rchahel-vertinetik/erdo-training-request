@@ -25,9 +25,30 @@
       cursor: pointer;
     }
 
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+
+    .spinner {
+      margin: 30px auto 10px auto;
+      border: 6px solid #f3f3f3;
+      border-top: 6px solid #4caf50;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      display: none;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
     .progress-container {
       width: 80%;
-      margin: 30px auto 10px auto;
+      margin: 20px auto 10px auto;
     }
 
     .progress-bar {
@@ -48,11 +69,13 @@
 <body>
 
   <div class="button-grid">
-    <button onclick="runPredictProject()">🧠 Predict Project</button>
-    <button onclick="runRetrain()">🔁 Retrain</button>
-    <button onclick="runDelete()">❌ Delete Predictions</button>
-    <button onclick="runSync()">🔄 Sync to Crowns</button>
+    <button id="predictBtn" onclick="runPredictProject()">🧠 Predict Project</button>
+    <button id="retrainBtn" onclick="runRetrain()">🔁 Retrain</button>
+    <button id="deleteBtn" onclick="runDelete()">❌ Delete Predictions</button>
+    <button id="syncBtn" onclick="runSync()">🔄 Sync to Crowns</button>
   </div>
+
+  <div class="spinner" id="spinner"></div>
 
   <div class="progress-container">
     <div class="progress-bar" id="progressBar">0%</div>
@@ -80,27 +103,46 @@
       document.getElementById("statusText").innerText = status;
     }
 
+    function disableButtons(disable = true) {
+      document.querySelectorAll("button").forEach(btn => btn.disabled = disable);
+    }
+
+    function showSpinner(show = true) {
+      document.getElementById("spinner").style.display = show ? "block" : "none";
+    }
+
     async function streamEndpoint(url) {
-      const response = await fetch(url);
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder("utf-8");
-      let { value, done } = await reader.read();
-      while (!done) {
-        const chunk = decoder.decode(value);
-        const lines = chunk.trim().split("\n");
-        for (const line of lines) {
-          try {
-            const json = JSON.parse(line);
-            if (json.progress !== undefined && json.total !== undefined) {
-              updateProgress(json.progress, json.total, json.status || "working...");
-            } else {
-              document.getElementById("statusText").innerText = json.status || "Processing...";
+      disableButtons(true);
+      showSpinner(true);
+      updateProgress(0, 100, "Starting...");
+      try {
+        const response = await fetch(url);
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder("utf-8");
+
+        let { value, done } = await reader.read();
+        while (!done) {
+          const chunk = decoder.decode(value);
+          const lines = chunk.trim().split("\n");
+          for (const line of lines) {
+            try {
+              const json = JSON.parse(line);
+              if (json.progress !== undefined && json.total !== undefined) {
+                updateProgress(json.progress, json.total, json.status || "working...");
+              } else {
+                document.getElementById("statusText").innerText = json.status || "Processing...";
+              }
+            } catch (e) {
+              console.warn("Non-JSON line:", line);
             }
-          } catch (e) {
-            console.warn("Non-JSON line:", line);
           }
+          ({ value, done } = await reader.read());
         }
-        ({ value, done } = await reader.read());
+      } catch (err) {
+        updateProgress(0, 100, "❌ Error: " + err.message);
+      } finally {
+        disableButtons(false);
+        showSpinner(false);
       }
     }
 
@@ -121,9 +163,21 @@
         species_header: "Species",
         max_epochs: "10"
       });
-      const res = await fetch(url);
-      const json = await res.json();
-      updateProgress(100, 100, "✅ Retrain complete: " + json.retrain_model_path);
+
+      disableButtons(true);
+      showSpinner(true);
+      updateProgress(0, 100, "Retraining...");
+
+      try {
+        const res = await fetch(url);
+        const json = await res.json();
+        updateProgress(100, 100, "✅ Retrain complete: " + json.retrain_model_path);
+      } catch (err) {
+        updateProgress(0, 100, "❌ Error: " + err.message);
+      } finally {
+        disableButtons(false);
+        showSpinner(false);
+      }
     }
 
     async function runDelete() {
