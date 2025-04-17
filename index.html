@@ -32,8 +32,7 @@
     }
 
     .main-btn {
-      flex: 1;
-      background-color: #4caf50;
+      background-color: #359f00;
       color: white;
       border: none;
       padding: 6px 8px;
@@ -48,16 +47,13 @@
       cursor: not-allowed;
     }
 
-    .dropdown {
+    /* Analyze dropdown combo */
+    .dropdown-wrap {
       position: relative;
       flex: 1;
     }
 
-    .dropdown-toggle {
-      background-color: #666;
-    }
-
-    .dropdown-toggle::after {
+    .dropdown-wrap .main-btn::after {
       content: " ▾";
       font-size: 10px;
     }
@@ -89,7 +85,7 @@
       background-color: #555;
     }
 
-    .dropdown:hover .dropdown-content {
+    .dropdown-wrap:hover .dropdown-content {
       display: block;
     }
 
@@ -106,7 +102,7 @@
       width: 12px;
       height: 12px;
       border: 2px solid #bbb;
-      border-top: 2px solid #4caf50;
+      border-top: 2px solid #359f00;
       border-radius: 50%;
       animation: spin 0.6s linear infinite;
     }
@@ -120,14 +116,15 @@
 
   <div class="container">
     <div class="button-row">
-      <button class="main-btn" onclick="runPredictProject()">Analyze</button>
-      <div class="dropdown">
-        <button class="main-btn dropdown-toggle">More</button>
+      <div class="dropdown-wrap">
+        <button class="main-btn">Analyze</button>
         <div class="dropdown-content">
+          <button onclick="runPredictProject()">Run Predictions</button>
           <button onclick="runDelete()">Clear Results</button>
           <button onclick="runSync()">Approve Results</button>
         </div>
       </div>
+
       <button class="main-btn" onclick="runRetrain()">Retrain</button>
     </div>
 
@@ -232,5 +229,6 @@
       await streamEndpoint(url);
     }
   </script>
+
 </body>
 </html>
