@@ -9,17 +9,27 @@
       text-align: center;
       padding: 2rem;
     }
+
+    .button-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
     button {
-      padding: 12px 20px;
-      margin: 8px;
+      padding: 12px;
       font-size: 16px;
       border-radius: 8px;
       cursor: pointer;
     }
+
     .progress-container {
       width: 80%;
-      margin: 20px auto;
+      margin: 30px auto 10px auto;
     }
+
     .progress-bar {
       height: 25px;
       background-color: #4caf50;
@@ -28,18 +38,21 @@
       text-align: center;
       transition: width 0.3s;
     }
+
     .status {
-      margin-top: 10px;
+      margin-top: 8px;
       font-style: italic;
     }
   </style>
 </head>
 <body>
 
-  <button onclick="runPredictProject()">🧠 Predict Project</button>
-  <button onclick="runRetrain()">🔁 Retrain</button>
-  <button onclick="runDelete()">❌ Delete Predictions</button>
-  <button onclick="runSync()">🔄 Sync to Crowns</button>
+  <div class="button-grid">
+    <button onclick="runPredictProject()">🧠 Predict Project</button>
+    <button onclick="runRetrain()">🔁 Retrain</button>
+    <button onclick="runDelete()">❌ Delete Predictions</button>
+    <button onclick="runSync()">🔄 Sync to Crowns</button>
+  </div>
 
   <div class="progress-container">
     <div class="progress-bar" id="progressBar">0%</div>
