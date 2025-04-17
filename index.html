@@ -8,41 +8,7 @@
       font-family: Arial, sans-serif;
       text-align: center;
       padding: 2rem;
-    }
-
-    .progress-container {
-      width: 80%;
-      margin: 0 auto 10px auto;
-    }
-
-    .progress-bar {
-      height: 25px;
-      background-color: #4caf50;
-      width: 0%;
-      color: white;
-      text-align: center;
-      transition: width 0.3s;
-    }
-
-    .status {
-      margin-top: 8px;
-      font-style: italic;
-    }
-
-    .spinner {
-      margin: 20px auto;
-      border: 6px solid #f3f3f3;
-      border-top: 6px solid #4caf50;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-      display: none;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+      position: relative;
     }
 
     .button-grid {
@@ -50,7 +16,8 @@
       grid-template-columns: 1fr 1fr;
       gap: 1rem;
       max-width: 400px;
-      margin: 30px auto 0 auto;
+      margin: 0 auto;
+      position: relative;
     }
 
     button {
@@ -64,21 +31,67 @@
       background-color: #ccc;
       cursor: not-allowed;
     }
+
+    /* Overlay */
+    .progress-overlay {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 400px;
+      height: 100%;
+      background-color: rgba(255, 255, 255, 0.8);
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+      border-radius: 8px;
+    }
+
+    .progress-bar {
+      width: 80%;
+      height: 25px;
+      background-color: #4caf50;
+      color: white;
+      text-align: center;
+      transition: width 0.3s;
+      border-radius: 4px;
+    }
+
+    .spinner {
+      margin: 20px 0;
+      border: 6px solid #f3f3f3;
+      border-top: 6px solid #4caf50;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+
+    .status {
+      margin-top: 10px;
+      font-style: italic;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
 
-  <!-- 🔝 Progress bar & status -->
-  <div class="progress-container">
-    <div class="progress-bar" id="progressBar">0%</div>
-    <div class="status" id="statusText"></div>
-  </div>
-
-  <!-- 🌀 Spinner -->
-  <div class="spinner" id="spinner"></div>
-
-  <!-- 🎛️ Buttons -->
   <div class="button-grid">
+    <!-- Overlay above the buttons -->
+    <div id="overlay" class="progress-overlay">
+      <div class="spinner" id="spinner"></div>
+      <div class="progress-bar" id="progressBar">0%</div>
+      <div class="status" id="statusText">Working...</div>
+    </div>
+
+    <!-- 2x2 Button Grid -->
     <button id="predictBtn" onclick="runPredictProject()">🧠 Predict Project</button>
     <button id="retrainBtn" onclick="runRetrain()">🔁 Retrain</button>
     <button id="deleteBtn" onclick="runDelete()">❌ Delete Predictions</button>
@@ -106,18 +119,19 @@
       document.getElementById("statusText").innerText = status;
     }
 
+    function showOverlay(show = true) {
+      document.getElementById("overlay").style.display = show ? "flex" : "none";
+    }
+
     function disableButtons(disable = true) {
       document.querySelectorAll("button").forEach(btn => btn.disabled = disable);
     }
 
-    function showSpinner(show = true) {
-      document.getElementById("spinner").style.display = show ? "block" : "none";
-    }
-
     async function streamEndpoint(url) {
       disableButtons(true);
-      showSpinner(true);
+      showOverlay(true);
       updateProgress(0, 100, "Starting...");
+
       try {
         const response = await fetch(url);
         const reader = response.body.getReader();
@@ -145,7 +159,7 @@
         updateProgress(0, 100, "❌ Error: " + err.message);
       } finally {
         disableButtons(false);
-        showSpinner(false);
+        showOverlay(false);
       }
     }
 
@@ -168,7 +182,7 @@
       });
 
       disableButtons(true);
-      showSpinner(true);
+      showOverlay(true);
       updateProgress(0, 100, "Retraining...");
 
       try {
@@ -179,7 +193,7 @@
         updateProgress(0, 100, "❌ Error: " + err.message);
       } finally {
         disableButtons(false);
-        showSpinner(false);
+        showOverlay(false);
       }
     }
 
