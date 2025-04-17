@@ -2,162 +2,126 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Tree Species Classifier</title>
   <style>
-    body {
-      font-family: "Segoe UI", sans-serif;
-      background-color: #f9f9f9;
-      text-align: center;
-      padding: 2rem;
-      font-size: 14px;
-    }
-
-    .container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1rem;
-      max-width: 320px;
-      margin: 0 auto;
-      position: relative;
-    }
-
-    button {
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
+      font-size: 12px;
       width: 100%;
-      padding: 10px 14px;
-      font-size: 14px;
+      height: 100%;
+      overflow: hidden;
+      background: #f5f5f5;
+    }
+
+    .wrap {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-evenly;
+      align-items: center;
+      height: 100%;
+      padding: 4px;
+      box-sizing: border-box;
+    }
+
+    .main-btn {
       background-color: #4caf50;
       color: white;
       border: none;
-      border-radius: 6px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
       cursor: pointer;
-      transition: background 0.2s ease-in-out;
+      white-space: nowrap;
     }
 
-    button:hover:not(:disabled) {
-      background-color: #45a049;
-    }
-
-    button:disabled {
+    .main-btn:disabled {
       background-color: #ccc;
       cursor: not-allowed;
     }
 
-    /* More actions dropdown */
     .dropdown {
       position: relative;
-      width: 100%;
+      display: inline-block;
     }
 
-    .more-btn {
-      background-color: #e0e0e0;
-      color: #333;
+    .dropdown-toggle::after {
+      content: " ▾";
+      font-size: 10px;
     }
 
     .dropdown-content {
       display: none;
       position: absolute;
-      top: 100%;
-      width: 100%;
-      left: 0;
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      z-index: 100;
+      top: 24px;
+      right: 0;
+      background-color: white;
+      box-shadow: 0px 2px 6px rgba(0,0,0,0.2);
+      z-index: 999;
+      min-width: 120px;
+      font-size: 11px;
+      border-radius: 4px;
     }
 
     .dropdown-content button {
       background: none;
       border: none;
-      color: #333;
       width: 100%;
       text-align: left;
-      padding: 10px;
-      font-size: 13px;
-      border-bottom: 1px solid #eee;
+      padding: 6px 10px;
+      cursor: pointer;
     }
 
     .dropdown-content button:hover {
-      background-color: #f3f3f3;
-    }
-
-    .dropdown-content button:last-child {
-      border-bottom: none;
+      background-color: #f0f0f0;
     }
 
     .dropdown:hover .dropdown-content {
       display: block;
     }
 
-    .overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      backdrop-filter: blur(4px);
-      background-color: rgba(255, 255, 255, 0.8);
-      display: none;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 999;
-      border-radius: 10px;
-    }
-
-    .progress-bar {
-      width: 80%;
-      height: 20px;
-      background-color: #4caf50;
-      color: white;
-      text-align: center;
-      transition: width 0.3s;
-      font-size: 12px;
-      border-radius: 4px;
-    }
-
     .spinner {
-      margin: 20px 0;
-      width: 30px;
-      height: 30px;
-      border: 5px solid #f3f3f3;
-      border-top: 5px solid #4caf50;
+      width: 14px;
+      height: 14px;
+      border: 2px solid #ccc;
+      border-top: 2px solid #4caf50;
       border-radius: 50%;
-      animation: spin 1s linear infinite;
+      animation: spin 0.6s linear infinite;
+      margin-left: 4px;
     }
 
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      100% { transform: rotate(360deg); }
     }
 
     .status {
+      position: absolute;
+      bottom: 2px;
+      left: 5px;
+      font-size: 10px;
       font-style: italic;
-      font-size: 13px;
+      color: #444;
     }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <div id="overlay" class="overlay">
-      <div class="spinner"></div>
-      <div class="progress-bar" id="progressBar">0%</div>
-      <div class="status" id="statusText">Working...</div>
-    </div>
-
-    <button onclick="runPredictProject()">Analyze Trees</button>
+  <div class="wrap">
+    <button class="main-btn" onclick="runPredictProject()">Analyze</button>
 
     <div class="dropdown">
-      <button class="more-btn">More Options ▾</button>
+      <button class="main-btn dropdown-toggle">More</button>
       <div class="dropdown-content">
         <button onclick="runDelete()">Clear Results</button>
         <button onclick="runSync()">Approve Results</button>
       </div>
     </div>
 
-    <button onclick="runRetrain()">Retrain Model</button>
+    <button class="main-btn" onclick="runRetrain()">Retrain</button>
+    <div id="spinner" style="display:none;" class="spinner"></div>
   </div>
+
+  <div id="status" class="status"></div>
 
   <script>
     const isSecure = window.location.protocol === "https:";
@@ -175,21 +139,17 @@
       return project;
     }
 
-    function updateProgress(progress, total, status) {
-      const percent = Math.min(100, Math.round((progress / total) * 100));
-      document.getElementById("progressBar").style.width = percent + "%";
-      document.getElementById("progressBar").textContent = percent + "%";
-      document.getElementById("statusText").innerText = status;
+    function setStatus(msg) {
+      document.getElementById("status").innerText = msg;
     }
 
-    function toggleOverlay(show = true) {
-      document.getElementById("overlay").style.display = show ? "flex" : "none";
+    function showSpinner(show) {
+      document.getElementById("spinner").style.display = show ? "inline-block" : "none";
     }
 
     async function streamEndpoint(url) {
-      toggleOverlay(true);
-      updateProgress(0, 100, "Starting...");
-
+      showSpinner(true);
+      setStatus("Working...");
       try {
         const response = await fetch(url);
         const reader = response.body.getReader();
@@ -202,21 +162,16 @@
           for (const line of lines) {
             try {
               const json = JSON.parse(line);
-              if (json.progress !== undefined && json.total !== undefined) {
-                updateProgress(json.progress, json.total, json.status || "working...");
-              } else {
-                document.getElementById("statusText").innerText = json.status || "Processing...";
-              }
-            } catch (e) {
-              console.warn("Non-JSON line:", line);
-            }
+              if (json.status) setStatus(json.status);
+            } catch (e) {}
           }
           ({ value, done } = await reader.read());
         }
+        setStatus("✅ Done");
       } catch (err) {
-        updateProgress(0, 100, "❌ Error: " + err.message);
+        setStatus("❌ " + err.message);
       } finally {
-        toggleOverlay(false);
+        showSpinner(false);
       }
     }
 
@@ -237,17 +192,16 @@
         species_header: "Species",
         max_epochs: "10"
       });
-
-      toggleOverlay(true);
-      updateProgress(0, 100, "Retraining...");
+      showSpinner(true);
+      setStatus("Retraining...");
       try {
         const res = await fetch(url);
         const json = await res.json();
-        updateProgress(100, 100, "✅ Retrain complete: " + json.retrain_model_path);
+        setStatus("✅ Retrained");
       } catch (err) {
-        updateProgress(0, 100, "❌ Error: " + err.message);
+        setStatus("❌ " + err.message);
       } finally {
-        toggleOverlay(false);
+        showSpinner(false);
       }
     }
 
@@ -263,6 +217,5 @@
       await streamEndpoint(url);
     }
   </script>
-
 </body>
 </html>
