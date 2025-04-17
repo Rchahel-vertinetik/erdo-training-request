@@ -6,43 +6,55 @@
     html, body {
       margin: 0;
       padding: 0;
-      font-family: sans-serif;
+      font-family: "Segoe UI", sans-serif;
       font-size: 12px;
       width: 100%;
       height: 100%;
+      background-color: #353535;
+      color: white;
       overflow: hidden;
-      background: #f5f5f5;
     }
 
-    .wrap {
+    .container {
       display: flex;
-      flex-direction: row;
-      justify-content: space-evenly;
-      align-items: center;
+      flex-direction: column;
       height: 100%;
-      padding: 4px;
+      justify-content: flex-start;
+      padding: 4px 6px;
       box-sizing: border-box;
     }
 
+    .button-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
     .main-btn {
+      flex: 1;
       background-color: #4caf50;
       color: white;
       border: none;
-      padding: 4px 8px;
+      padding: 6px 8px;
       border-radius: 4px;
-      font-size: 11px;
+      font-size: 13px;
       cursor: pointer;
       white-space: nowrap;
     }
 
     .main-btn:disabled {
-      background-color: #ccc;
+      background-color: #777;
       cursor: not-allowed;
     }
 
     .dropdown {
       position: relative;
-      display: inline-block;
+      flex: 1;
+    }
+
+    .dropdown-toggle {
+      background-color: #666;
     }
 
     .dropdown-toggle::after {
@@ -53,75 +65,77 @@
     .dropdown-content {
       display: none;
       position: absolute;
-      top: 24px;
-      right: 0;
-      background-color: white;
-      box-shadow: 0px 2px 6px rgba(0,0,0,0.2);
-      z-index: 999;
-      min-width: 120px;
-      font-size: 11px;
+      top: 100%;
+      left: 0;
+      width: 100%;
+      background-color: #444;
       border-radius: 4px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      z-index: 999;
     }
 
     .dropdown-content button {
       background: none;
       border: none;
+      color: white;
       width: 100%;
       text-align: left;
-      padding: 6px 10px;
+      padding: 6px 8px;
+      font-size: 12px;
       cursor: pointer;
     }
 
     .dropdown-content button:hover {
-      background-color: #f0f0f0;
+      background-color: #555;
     }
 
     .dropdown:hover .dropdown-content {
       display: block;
     }
 
+    .footer {
+      margin-top: auto;
+      font-size: 10px;
+      color: #bbb;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
     .spinner {
-      width: 14px;
-      height: 14px;
-      border: 2px solid #ccc;
+      width: 12px;
+      height: 12px;
+      border: 2px solid #bbb;
       border-top: 2px solid #4caf50;
       border-radius: 50%;
       animation: spin 0.6s linear infinite;
-      margin-left: 4px;
     }
 
     @keyframes spin {
       100% { transform: rotate(360deg); }
     }
-
-    .status {
-      position: absolute;
-      bottom: 2px;
-      left: 5px;
-      font-size: 10px;
-      font-style: italic;
-      color: #444;
-    }
   </style>
 </head>
 <body>
 
-  <div class="wrap">
-    <button class="main-btn" onclick="runPredictProject()">Analyze</button>
-
-    <div class="dropdown">
-      <button class="main-btn dropdown-toggle">More</button>
-      <div class="dropdown-content">
-        <button onclick="runDelete()">Clear Results</button>
-        <button onclick="runSync()">Approve Results</button>
+  <div class="container">
+    <div class="button-row">
+      <button class="main-btn" onclick="runPredictProject()">Analyze</button>
+      <div class="dropdown">
+        <button class="main-btn dropdown-toggle">More</button>
+        <div class="dropdown-content">
+          <button onclick="runDelete()">Clear Results</button>
+          <button onclick="runSync()">Approve Results</button>
+        </div>
       </div>
+      <button class="main-btn" onclick="runRetrain()">Retrain</button>
     </div>
 
-    <button class="main-btn" onclick="runRetrain()">Retrain</button>
-    <div id="spinner" style="display:none;" class="spinner"></div>
+    <div class="footer">
+      <div id="status">Ready</div>
+      <div id="spinner" class="spinner" style="display: none;"></div>
+    </div>
   </div>
-
-  <div id="status" class="status"></div>
 
   <script>
     const isSecure = window.location.protocol === "https:";
@@ -192,6 +206,7 @@
         species_header: "Species",
         max_epochs: "10"
       });
+
       showSpinner(true);
       setStatus("Retraining...");
       try {
