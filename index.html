@@ -7,23 +7,24 @@
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      padding: 2rem;
+      padding: 1rem;
       position: relative;
+      font-size: 14px;
     }
 
     .button-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-      max-width: 400px;
+      gap: 0.75rem;
+      max-width: 300px;
       margin: 0 auto;
       position: relative;
     }
 
     button {
-      padding: 12px;
-      font-size: 16px;
-      border-radius: 8px;
+      padding: 8px;
+      font-size: 13px;
+      border-radius: 6px;
       cursor: pointer;
     }
 
@@ -32,14 +33,13 @@
       cursor: not-allowed;
     }
 
-    /* Overlay */
     .progress-overlay {
       position: absolute;
       top: 0;
       left: 50%;
       transform: translateX(-50%);
       width: 100%;
-      max-width: 400px;
+      max-width: 300px;
       height: 100%;
       background-color: rgba(255, 255, 255, 0.8);
       display: none;
@@ -47,32 +47,35 @@
       justify-content: center;
       align-items: center;
       z-index: 10;
-      border-radius: 8px;
+      border-radius: 6px;
+      font-size: 13px;
     }
 
     .progress-bar {
       width: 80%;
-      height: 25px;
+      height: 20px;
       background-color: #4caf50;
       color: white;
       text-align: center;
       transition: width 0.3s;
       border-radius: 4px;
+      font-size: 12px;
     }
 
     .spinner {
-      margin: 20px 0;
-      border: 6px solid #f3f3f3;
-      border-top: 6px solid #4caf50;
+      margin: 15px 0;
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid #4caf50;
       border-radius: 50%;
-      width: 40px;
-      height: 40px;
+      width: 30px;
+      height: 30px;
       animation: spin 1s linear infinite;
     }
 
     .status {
-      margin-top: 10px;
+      margin-top: 6px;
       font-style: italic;
+      font-size: 13px;
     }
 
     @keyframes spin {
@@ -84,25 +87,23 @@
 <body>
 
   <div class="button-grid">
-    <!-- Overlay above the buttons -->
     <div id="overlay" class="progress-overlay">
       <div class="spinner" id="spinner"></div>
       <div class="progress-bar" id="progressBar">0%</div>
       <div class="status" id="statusText">Working...</div>
     </div>
 
-    <!-- 2x2 Button Grid -->
     <button id="predictBtn" onclick="runPredictProject()">Predict</button>
     <button id="retrainBtn" onclick="runRetrain()">Retrain</button>
-    <button id="deleteBtn" onclick="runDelete()">Delete Predictions</button>
+    <button id="deleteBtn" onclick="runDelete()">Delete</button>
     <button id="syncBtn" onclick="runSync()">Approve</button>
   </div>
 
   <script>
     const isSecure = window.location.protocol === "https:";
     const API_BASE = isSecure
-  ? "https://35.178.130.156:443"  // if you set up SSL
-  : "http://35.178.130.156:8080";
+      ? "https://35.178.130.156:443"
+      : "http://35.178.130.156:8080";
 
     function getProjectFromURL() {
       const params = new URLSearchParams(window.location.search);
