@@ -133,10 +133,7 @@
   </div>
 
   <script>
-    const isSecure = window.location.protocol === "https:";
-    const API_BASE = isSecure
-      ? "https://35.178.130.156:443"
-      : "http://35.178.130.156:8080";
+    const API_BASE = "https://ken-ecs-alb-1258416324.eu-west-2.elb.amazonaws.com";
   
     function getProjectFromURL() {
       const params = new URLSearchParams(window.location.search);
@@ -200,15 +197,7 @@
   
     async function runRetrain() {
       const project = getProjectFromURL();
-      const url = `${API_BASE}/retrain?` + new URLSearchParams({
-        dataset_name: project,
-        image_dir: `/data/${project}/images`,
-        mask_dir: `/data/${project}/masks`,
-        label_geojson: `/data/${project}/labels.geojson`,
-        tree_id_header: "Tree_ID",
-        species_header: "Species",
-        max_epochs: "10"
-      });
+      const url = `${API_BASE}/retrain_and_predict?project_name=${encodeURIComponent(project)}`;
   
       showSpinner(true);
       disableAllButtons(true);
