@@ -133,7 +133,7 @@
   </div>
 
   <script>
-    const API_BASE = "https://tree-species-classification-cpu-1042524106019.us-central1.run.app/";
+    const API_BASE = "https://tree-species-classification-gpu-1042524106019.europe-west1.run.app";
   
     function getProjectFromURL() {
       const params = new URLSearchParams(window.location.search);
@@ -197,7 +197,7 @@
   
     async function runRetrain() {
       const project = getProjectFromURL();
-      const url = `${API_BASE}/retrain_and_predict?project_name=${encodeURIComponent(project)}`;
+      const url = `${API_BASE}/retrain_project?project_name=${encodeURIComponent(project)}`;
   
       showSpinner(true);
       disableAllButtons(true);
